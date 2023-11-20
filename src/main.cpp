@@ -40,7 +40,7 @@ int status = WL_IDLE_STATUS;
 //==============================================================================
 
 #define THINGSBOARD_MQTT_SERVER "thingsboard.cloud"
-#define THINGSBOARD_MQTT_ACESSTOKEN "jSvswXrL0hzAsoCWZs0d"
+#define THINGSBOARD_MQTT_ACESSTOKEN "DDEGVdhkiNAvoM6LbxL1"
 #define THINGSBOARD_MQTT_PORT 1883
 #endif
 //==============================================================================
