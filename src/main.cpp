@@ -5,9 +5,11 @@
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_SleepyDog.h> //Include the watchdog library
+#include "TFT_eSPI.h"
+#include "iconos_bme280_140x170.h"
 #define THI true
 #define ANYSPS30 true
-#define CES false
+#define CES true
 
 #if THI
 #include <ThingsBoard.h>
@@ -42,6 +44,9 @@ int status = WL_IDLE_STATUS;
 #define THINGSBOARD_MQTT_PORT 1883
 #endif
 //==============================================================================
+TFT_eSPI tft= TFT_eSPI();
+TFT_eSprite sprite = TFT_eSprite(&tft);
+//==============================================================================
 SPS30 sps30;
 bool SPS30B;    // Begin out
 bool SPS30P;    // Probe out
@@ -58,8 +63,8 @@ float SPS30_PSZ;
 //==============================================================================
 #if THI
 #if CES
-#define WIFISSID "ces"       // WiFi SSID here
-#define PASSWORD "univerces" // WiFi password here
+#define WIFISSID "UCES_Concesionarios"       // WiFi SSID here
+#define PASSWORD "Cafeterias2023*.*" // WiFi password here
 #else
 #define WIFISSID          "Familia Morales"                                            //WiFi SSID here
 #define PASSWORD          "2205631700"                                                    //WiFi password here
@@ -89,7 +94,24 @@ void setup()
 
 WiFiUDP ntpUDP;
 
+//==============================================================================
+  tft.init();
+  tft.setRotation(1);
+  tft.setSwapBytes(true);
+  tft.fillScreen(TFT_WHITE);
+  tft.pushImage(180,0,140,170,iconos_bme280_140x170);
 
+  sprite.createSprite(179,150);
+ 
+  sprite.setTextColor(TFT_BLACK,TFT_WHITE);
+  tft.setTextColor(TFT_BLACK, TFT_WHITE);
+  tft.setTextSize(1);
+  tft.drawString("Universidad CES",10,160);
+  tft.setTextSize(2);
+  bool status;
+
+
+  //==============================================================================
 WiFi.begin(WIFISSID, PASSWORD);
 //------------------------------------------------------------------------------
 while (WiFi.status() != WL_CONNECTED)
@@ -130,7 +152,11 @@ Serial.println();
   scd4x.startPeriodicMeasurement();
   Serial.println("Waiting for first measurement... (5 sec)");
 #endif
- 
+   status = sps30.begin(SPS30_COMMS);  
+  if (!status) {
+    tft.drawString("No se encuentra SPS30",10,50);
+    while (1);
+  }
   delay(READ_DELAY);
   
 }
@@ -148,8 +174,8 @@ void loop()
   float promedio_co2 = 0.0f;                         // SCD40
 
 #endif
-  //==========================================================================
 
+  //==========================================================================
   sps30.GetValues(&val);
   delay(SENS_DELAY);
 
@@ -227,7 +253,14 @@ void loop()
   Serial.println("% rH"); // SHT40
 
 #endif
-
+  //==========================================================================
+  sprite.fillSprite(TFT_WHITE);
+  sprite.setFreeFont(&Orbitron_Light_32);
+  sprite.drawString(String(promedio_temperatura),20,10);
+  sprite.drawString(String(promedio_humedad),20,60);
+  sprite.drawString(String(co2),20,110);
+  sprite.pushSprite(0,0);
+  //==========================================================================
   delay(READ_DELAY);
   Watchdog.reset(); //Reset the watchdog
 }
